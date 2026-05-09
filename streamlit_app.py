@@ -191,7 +191,7 @@ else:
         if st.session_state.start_time is None:
             if st.button("🚀 Start Study Session", use_container_width=True):
                 st.session_state.start_time = time.time()
-                st.rerun()
+                st.rerun())
         else:
             elapsed_seconds = int(time.time() - st.session_state.start_time)
             mins, secs = divmod(elapsed_seconds, 60)
