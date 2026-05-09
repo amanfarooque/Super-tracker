@@ -8,7 +8,7 @@ from datetime import datetime
 # ==========================================
 # 1. DATABASE SETUP (Replaces MongoDB)
 # ==========================================
-def init_db():def init_db():
+def init_db():
     conn = sqlite3.connect('studyflow.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users 
