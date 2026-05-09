@@ -91,31 +91,56 @@ else:
         st.session_state.start_time = None
         st.rerun()
 
-    # --- HOME PAGE & TIMER ---
+        # --- HOME PAGE & TIMER ---
     if menu == "Home (Timer)":
         st.title("⏱️ Study Tracker")
         st.write("Ready to crush your syllabus?")
         
         subject = st.selectbox("What are we studying?", ["Physics", "Chemistry", "Biology", "Mock Test", "General"])
         
-        # Timer Logic for Streamlit
+        # Create a container for the big clock
+        timer_placeholder = st.empty()
+
         if st.session_state.start_time is None:
+            # Big Static Display when not running
+            timer_placeholder.markdown("""
+                <div style="text-align: center; padding: 20px; border: 5px solid #4A90E2; border-radius: 100px; width: 250px; margin: auto;">
+                    <h1 style="color: #4A90E2; font-family: 'Courier New'; margin: 0;">00:00:00</h1>
+                </div>
+            """, unsafe_allow_html=True)
+
             if st.button("🚀 Start Study Session", use_container_width=True):
                 st.session_state.start_time = time.time()
                 st.rerun()
         else:
-            elapsed_seconds = int(time.time() - st.session_state.start_time)
-            mins, secs = divmod(elapsed_seconds, 60)
-            hours, mins = divmod(mins, 60)
+            # This loop makes the clock "TICK"
+            stop_button = st.button("⏹️ Stop & Save Session", use_container_width=True)
             
-            st.info(f"**Session in progress:** {hours:02d}:{mins:02d}:{secs:02d}")
-            st.write("*(Note: Click refresh to update the clock!)*")
-            
-            if st.button("⏹️ Stop & Save Session", use_container_width=True):
-                duration_hours = elapsed_seconds / 3600.0
+            while not stop_button:
+                elapsed_seconds = int(time.time() - st.session_state.start_time)
+                mins, secs = divmod(elapsed_seconds, 60)
+                hours, mins = divmod(mins, 60)
+                time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
+
+                # The Big Digital Display using HTML/CSS
+                timer_placeholder.markdown(f"""
+                    <div style="text-align: center; padding: 20px; border: 5px solid #FF4B4B; border-radius: 100px; width: 250px; margin: auto; background-color: #FFF5F5;">
+                        <h1 style="color: #FF4B4B; font-family: 'Courier New'; margin: 0;">{time_str}</h1>
+                        <p style="color: #FF4B4B; margin: 0; font-size: 12px;">SESSION IN PROGRESS</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                time.sleep(1) # Wait 1 second before updating
+                
+                # Check if the user pressed stop during the loop
+                if stop_button:
+                    break
+
+            # Save Logic after Stop is pressed
+            if stop_button:
+                duration_hours = (time.time() - st.session_state.start_time) / 3600.0
                 today_date = datetime.now().strftime("%Y-%m-%d")
                 
-                # Save to database
                 conn = sqlite3.connect('studyflow.db')
                 c = conn.cursor()
                 c.execute("INSERT INTO sessions (username, duration, subject, date) VALUES (?, ?, ?, ?)",
