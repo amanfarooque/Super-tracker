@@ -8,7 +8,22 @@ from datetime import datetime
 # ==========================================
 # 1. DATABASE SETUP (Replaces MongoDB)
 # ==========================================
-def init_db():
+def init_db():def init_db():
+    conn = sqlite3.connect('studyflow.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users 
+                 (username TEXT PRIMARY KEY, password TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS sessions 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, duration REAL, subject TEXT, date TEXT)''')
+    # NEW: Table for Friendships
+    c.execute('''CREATE TABLE IF NOT EXISTS friends 
+                 (user TEXT, friend TEXT, PRIMARY KEY (user, friend))''')
+    # NEW: Table for Messages
+    c.execute('''CREATE TABLE IF NOT EXISTS messages 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, sender TEXT, receiver TEXT, content TEXT, timestamp DATETIME)''')
+    conn.commit()
+    conn.close()
+
 def init_db():
     conn = sqlite3.connect('studyflow.db')
     c = conn.cursor()
