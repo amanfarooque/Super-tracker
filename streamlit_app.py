@@ -106,7 +106,8 @@ if st.session_state.user is None:
 # ==========================================
 # 4. MAIN APPLICATION (Replaces React JSX)
 # ==========================================
-else:    # --- FRIENDS & CHAT PAGE ---
+else: 
+   # --- FRIENDS & CHAT PAGE ---
     elif menu == "Friends":
         st.title("👥 Community")
         
