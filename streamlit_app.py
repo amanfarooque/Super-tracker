@@ -82,16 +82,13 @@ if st.session_state.user is None:
 # 4. MAIN APPLICATION
 # ==========================================
 else:
-    # Sidebar Navigation - "Friends" added here!
-    st.sidebar.title(f"Welcome, {st.session_state.user}!")
-    menu = st.sidebar.radio("Navigation", ["Home (Timer)", "My Statistics", "Friends"])
+    # 1. Paste the CUSTOM CSS block here (from my previous message)
+    # 2. Paste the option_menu code here to create 'selected_tab'
     
-    if st.sidebar.button("Logout"):
-        st.session_state.user = None
-        st.session_state.start_time = None
-        st.rerun()
-
-        # --- HOME PAGE & TIMER ---
+    # 3. Update your IF statements to use 'selected_tab' instead of 'menu'
+    if selected_tab == "Timer":
+        st.title("⏱️ Study Tracker")
+        # ... (rest of your timer code)
     if menu == "Home (Timer)":
         st.title("⏱️ Study Tracker")
         st.write("Ready to crush your syllabus?")
