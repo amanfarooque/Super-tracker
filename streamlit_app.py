@@ -91,7 +91,70 @@ if st.session_state.user is None:
 # ==========================================
 # 4. MAIN APPLICATION (Replaces React JSX)
 # ==========================================
-else:
+else:    # --- FRIENDS & CHAT PAGE ---
+    elif menu == "Friends":
+        st.title("👥 Community")
+        
+        tab1, tab2, tab3 = st.tabs(["Search Users", "My Friends", "Chat"])
+
+        # TAB 1: Search and Add
+        with tab1:
+            search_query = st.text_input("Search unique username")
+            if search_query:
+                conn = sqlite3.connect('studyflow.db')
+                c = conn.cursor()
+                c.execute("SELECT username FROM users WHERE username LIKE ? AND username != ?", (f"%{search_query}%", st.session_state.user))
+                results = c.fetchall()
+                for row in results:
+                    col1, col2 = st.columns([3, 1])
+                    col1.write(row[0])
+                    if col2.button("Add Friend", key=row[0]):
+                        try:
+                            c.execute("INSERT INTO friends VALUES (?, ?)", (st.session_state.user, row[0]))
+                            conn.commit()
+                            st.success(f"Added {row[0]}!")
+                        except:
+                            st.warning("Already friends!")
+                conn.close()
+
+        # TAB 2: See Friends Stats
+        with tab2:
+            conn = sqlite3.connect('studyflow.db')
+            friends_df = pd.read_sql_query("SELECT friend FROM friends WHERE user=?", conn, params=(st.session_state.user,))
+            
+            for friend in friends_df['friend']:
+                with st.expander(f"📊 View {friend}'s Stats"):
+                    stats_df = pd.read_sql_query("SELECT subject, duration FROM sessions WHERE username=?", conn, params=(friend,))
+                    if not stats_df.empty:
+                        st.bar_chart(stats_df.groupby('subject')['duration'].sum())
+                    else:
+                        st.write("No sessions recorded yet.")
+            conn.close()
+
+        # TAB 3: Chat
+        with tab3:
+            friend_to_chat = st.selectbox("Select a friend to message", friends_df['friend'])
+            if friend_to_chat:
+                msg_content = st.text_input("Type a message")
+                if st.button("Send"):
+                    conn = sqlite3.connect('studyflow.db')
+                    c = conn.cursor()
+                    c.execute("INSERT INTO messages (sender, receiver, content, timestamp) VALUES (?, ?, ?, ?)",
+                              (st.session_state.user, friend_to_chat, msg_content, datetime.now()))
+                    conn.commit()
+                    conn.close()
+                
+                # Show Conversation
+                conn = sqlite3.connect('studyflow.db')
+                chat_df = pd.read_sql_query("""SELECT sender, content FROM messages 
+                                               WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?) 
+                                               ORDER BY id DESC LIMIT 10""", 
+                                            conn, params=(st.session_state.user, friend_to_chat, friend_to_chat, st.session_state.user))
+                for _, row in chat_df.iterrows():
+                    align = "right" if row['sender'] == st.session_state.user else "left"
+                    st.markdown(f"**{row['sender']}**: {row['content']}")
+                conn.close()
+
     # Sidebar Navigation
     st.sidebar.title(f"Welcome, {st.session_state.user}!")
     menu = st.sidebar.radio("Navigation", ["Home (Timer)", "My Statistics"])
